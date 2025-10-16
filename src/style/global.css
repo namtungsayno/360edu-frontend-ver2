@@ -1,0 +1,4 @@
+﻿:root { --brand: #2563eb; font-family: system-ui, Arial, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; background:#f7f8fb; color:#111; }
+.page { padding: 24px; }
