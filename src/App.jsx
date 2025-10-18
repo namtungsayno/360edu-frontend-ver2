@@ -1,4 +1,5 @@
-﻿import Providers from "./providers";
+﻿// src/app/App.jsx
+import Providers from "./providers";
 import AppRouter from "router";
 
 export default function App() {
