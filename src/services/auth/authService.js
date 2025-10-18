@@ -32,7 +32,6 @@ export const authService = {
     clearTokens(); saveProfile(null); return true;
   },
   async restoreSession() {
-    const at = localStorage.getItem(ACCESS);
     const cached = loadProfile();
     if (!at && !cached) return { user: null };
     try { const u = await this.getProfile(); return { user: u }; }
