@@ -11,8 +11,6 @@ const HomePage = lazy(() => import("pages/home/HomePage"));
 const UserListPage = lazy(() => import("pages/user/UserListPage"));
 const CourseListPage = lazy(() => import("pages/course/CourseListPage"));
 const ClassListPage = lazy(() => import("pages/class/ClassListPage"));
-
-// 👇 thêm dòng này nếu bạn dùng file routes/classroom/ClassroomRoutes.jsx như mình đã soạn
 const ClassroomRoutes = lazy(() => import("./classroom/ClassroomRoutes"));
 // (tuỳ chọn) nếu muốn dùng context cho module classroom
 export default function AppRouter() {

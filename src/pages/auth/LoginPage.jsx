@@ -5,26 +5,11 @@ import { useAuth } from "context/auth/AuthContext";
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // nếu vừa đăng ký xong
-  const justRegistered = location.state?.justRegistered;
-
-  // giữ nguyên state theo form cũ nhưng dùng username thay vì email
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(!!justRegistered);
-
-  useEffect(() => {
-    if (justRegistered) {
-      // tự ẩn thông báo sau 4 giây
-      const t = setTimeout(() => setShowSuccess(false), 4000);
-      return () => clearTimeout(t);
-    }
-  }, [justRegistered]);
 
   async function onSubmit(e) {
     e.preventDefault();
