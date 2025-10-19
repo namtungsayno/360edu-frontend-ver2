@@ -13,6 +13,7 @@ export default function ClassroomListPage() {
     size,
     q,
   });
+
   function onSearchSubmit(e) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -25,16 +26,18 @@ export default function ClassroomListPage() {
     setSp({ q, page: p, size });
     setParams({ page: p, size, q });
   }
-  async function onDelete(id) {
-    if (!window.confirm("Xoá classroom này?")) return;
+
+  // ✅ Ẩn/Hiện phòng (thay cho Xoá)
+  async function onToggle(id, active) {
     const { classroomService } = await import(
       "../../services/classroom/classroomService"
     );
     try {
-      await classroomService.remove(id);
+      if (active) await classroomService.disable(id);
+      else await classroomService.enable(id);
       refresh();
     } catch (e) {
-      alert(e?.response?.data?.message || e?.message || "Xoá thất bại");
+      alert(e?.response?.data?.message || e?.message || "Thao tác thất bại");
     }
   }
 
@@ -47,6 +50,7 @@ export default function ClassroomListPage() {
             + Thêm Classroom
           </Link>
         </div>
+
         <form className="row g-2 mb-3" onSubmit={onSearchSubmit}>
           <div className="col-auto">
             <input
@@ -72,17 +76,18 @@ export default function ClassroomListPage() {
                 <th style={{ width: 120 }}>ID</th>
                 <th>Tên classroom</th>
                 <th style={{ width: 140 }}>Sức chứa</th>
-                <th style={{ width: 160 }}></th>
+                <th style={{ width: 140 }}>Trạng thái</th> {/* NEW */}
+                <th style={{ width: 220 }}></th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={4}>Đang tải...</td>
+                  <td colSpan={5}>Đang tải...</td>
                 </tr>
               ) : data.items.length === 0 ? (
                 <tr>
-                  <td colSpan={4}>Không có dữ liệu</td>
+                  <td colSpan={5}>Không có dữ liệu</td>
                 </tr>
               ) : (
                 data.items.map((r) => (
@@ -90,6 +95,15 @@ export default function ClassroomListPage() {
                     <td>{r.id}</td>
                     <td>{r.name}</td>
                     <td>{r.capacity}</td>
+                    <td>
+                      {r.active ? (
+                        <span className="badge text-bg-success">
+                          Đang hoạt động
+                        </span>
+                      ) : (
+                        <span className="badge text-bg-secondary">Đã ẩn</span>
+                      )}
+                    </td>
                     <td className="text-end">
                       <Link
                         className="btn btn-sm btn-outline-primary me-2"
@@ -97,11 +111,17 @@ export default function ClassroomListPage() {
                       >
                         Sửa
                       </Link>
+
+                      {/* NEW: nút Ẩn/Hiện thay cho Xoá */}
                       <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={() => onDelete(r.id)}
+                        className={`btn btn-sm ${
+                          r.active
+                            ? "btn-outline-warning"
+                            : "btn-outline-success"
+                        }`}
+                        onClick={() => onToggle(r.id, r.active)}
                       >
-                        Xoá
+                        {r.active ? "Ẩn phòng" : "Hiện phòng"}
                       </button>
                     </td>
                   </tr>

@@ -18,6 +18,17 @@ export default function ClassroomForm() {
     <section className="section-padding">
       <div className="container" style={{ maxWidth: 640 }}>
         <h2 className="mb-3">{isEdit ? "Sửa Classroom" : "Thêm Classroom"}</h2>
+        {/* Hiển thị trạng thái khi ở chế độ sửa */}
+        {isEdit && (
+          <div className="mb-2">
+            {f.active ? (
+              <span className="badge text-bg-success">Đang hoạt động</span>
+            ) : (
+              <span className="badge text-bg-secondary">Đã ẩn</span>
+            )}
+          </div>
+        )}
+
         {loading ? (
           <div>Đang tải...</div>
         ) : (

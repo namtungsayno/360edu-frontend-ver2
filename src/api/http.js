@@ -45,9 +45,15 @@ if (process.env.REACT_APP_USE_MOCK === "true") {
   // In-memory DB cho Classroom
   // =========================
   let CLASSROOMS = [
-    { id: 1, name: "Lớp 10A1", capacity: 30 },
-    { id: 2, name: "Lớp 11A2", capacity: 35 },
-    { id: 3, name: "Physics Lab", capacity: 25 },
+    { id: 1, name: "Lớp 10A1", capacity: 30, active: true, status: "ACTIVE" },
+    { id: 2, name: "Lớp 11A2", capacity: 35, active: true, status: "ACTIVE" },
+    {
+      id: 3,
+      name: "Physics Lab",
+      capacity: 25,
+      active: false,
+      status: "INACTIVE",
+    },
   ];
   let nextId = 4;
 
@@ -111,7 +117,13 @@ if (process.env.REACT_APP_USE_MOCK === "true") {
         throw error;
       }
 
-      const item = { id: nextId++, name, capacity };
+      const item = {
+        id: nextId++,
+        name,
+        capacity,
+        active: true,
+        status: "ACTIVE",
+      };
       CLASSROOMS.push(item);
       return { data: item };
     }
@@ -218,7 +230,11 @@ if (process.env.REACT_APP_USE_MOCK === "true") {
         throw error;
       }
 
-      CLASSROOMS[idx] = { ...CLASSROOMS[idx], name, capacity };
+      // Giữ hoặc cập nhật trạng thái
+      const active = data?.active ?? CLASSROOMS[idx].active;
+      const status = data?.status ?? (active ? "ACTIVE" : "INACTIVE");
+
+      CLASSROOMS[idx] = { ...CLASSROOMS[idx], name, capacity, active, status };
       return { data: CLASSROOMS[idx] };
     }
 
@@ -226,12 +242,13 @@ if (process.env.REACT_APP_USE_MOCK === "true") {
   };
 
   // -------------
-  // DELETE (classrooms remove) (mock)
+  // Status (classrooms disable/enable) (mock)
   // -------------
-  http.delete = async (url, cfg) => {
-    if (url.startsWith("/classrooms/")) {
-      await delay(250);
-      const idRaw = getIdFromUrl(url);
+  // NEW: PATCH /classrooms/:id/enable | /classrooms/:id/disable
+  http.patch = async (url, data, cfg) => {
+    if (url.endsWith("/enable") || url.endsWith("/disable")) {
+      await delay(200);
+      const idRaw = url.match(/\/classrooms\/(.+)\/(enable|disable)$/)?.[1];
       const id = isNaN(Number(idRaw)) ? idRaw : Number(idRaw);
       const idx = CLASSROOMS.findIndex((x) => String(x.id) === String(id));
       if (idx === -1) {
@@ -242,10 +259,15 @@ if (process.env.REACT_APP_USE_MOCK === "true") {
         };
         throw error;
       }
-      CLASSROOMS.splice(idx, 1);
-      return { data: { ok: true } }; // hoặc: { status: 204, data: null }
+      const makeActive = url.endsWith("/enable");
+      CLASSROOMS[idx] = {
+        ...CLASSROOMS[idx],
+        active: makeActive,
+        status: makeActive ? "ACTIVE" : "INACTIVE",
+      };
+      return { data: CLASSROOMS[idx] };
     }
-
-    return realDelete(url, cfg);
+    // Mặc định: nếu có PATCH khác thì pass-through
+    return http.request({ method: "patch", url, data, ...cfg });
   };
 }

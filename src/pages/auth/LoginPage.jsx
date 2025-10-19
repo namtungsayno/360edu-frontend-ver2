@@ -1,131 +1,151 @@
-﻿import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+﻿// src/pages/auth/LoginPage.jsx
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "context/auth/AuthContext";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // nếu vừa đăng ký xong (chuyển từ Register về)
+  const justRegistered = Boolean(location.state?.justRegistered);
+
+  // state form
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [remember, setRemember] = useState(false);
   const [err, setErr] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (justRegistered) {
+      setInfo("Đăng ký thành công! Vui lòng đăng nhập.");
+      // xóa state để F5 không lặp lại
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [justRegistered, navigate, location.pathname]);
 
   async function onSubmit(e) {
     e.preventDefault();
     setErr("");
+    if (!username.trim() || !password.trim()) {
+      setErr("Vui lòng nhập đủ Username và Mật khẩu");
+      return;
+    }
     setLoading(true);
     try {
-      await login({ username, password }); // gọi BE, set cookie + cache user
-      navigate("/home", { replace: true }); // điều hướng về homepage
+      await login({ username, password, remember });
+      navigate("/home", { replace: true });
     } catch (ex) {
-      setErr(ex.displayMessage || "Đăng nhập thất bại");
+      setErr(ex?.displayMessage || "Đăng nhập thất bại");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <section className="login_register section-padding">
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-lg-6 col-md-8">
-            <div className="login">
-              <h4 className="login_register_title">Đăng nhập</h4>
+    <motion.div
+      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="space-y-6"
+    >
+      <h1 className="text-3xl font-extrabold text-center tracking-tight mb-2">
+        Đăng Nhập
+      </h1>
 
-              {/* 🔔 Thông báo đăng ký thành công */}
-              {showSuccess && (
-                <div
-                  className="d-flex align-items-center gap-2 p-3 mb-3 rounded-3"
-                  style={{
-                    backgroundColor: "#e6f4ea",
-                    border: "1px solid #b7e1c2",
-                    color: "#1a7f37",
-                    fontWeight: 500,
-                  }}
-                >
-                  <i className="bx bx-check-circle fs-4"></i>
-                  <span>Tạo tài khoản thành công! Vui lòng đăng nhập.</span>
-                </div>
-              )}
+      {info && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 px-4 py-3 text-sm">
+          {info}
+        </div>
+      )}
 
-              <form onSubmit={onSubmit}>
-                <div className="form-group">
-                  <label htmlFor="login-username">Username</label>
-                  <input
-                    id="login-username"
-                    type="text"
-                    className="form-control"
-                    placeholder="Nhập username"
-                    autoComplete="username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                </div>
+      {err && (
+        <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm">
+          {err}
+        </div>
+      )}
 
-                <div className="form-group">
-                  <label htmlFor="login-password">Mật khẩu</label>
-                  <input
-                    id="login-password"
-                    type="password"
-                    className="form-control"
-                    placeholder="Nhập mật khẩu"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
+      <form onSubmit={onSubmit} className="space-y-4">
+        {/* Username */}
+        <div className="space-y-1.5">
+          <label className="block text-slate-600 dark:text-slate-300 font-medium">
+            Username
+          </label>
+          <input
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300"
+            placeholder="Nhập username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            autoFocus
+          />
+        </div>
 
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <label className="form-check">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      checked={remember}
-                      onChange={(e) => setRemember(e.target.checked)}
-                    />
-                    <span className="form-check-label">Ghi nhớ đăng nhập</span>
-                  </label>
-                  <Link to="/auth/forgot" className="text-primary">
-                    Quên mật khẩu?
-                  </Link>
-                </div>
-
-                <button
-                  className="bg_btn bt w-100"
-                  type="submit"
-                  disabled={loading}
-                >
-                  {loading ? "Đang đăng nhập…" : "Đăng nhập"}
-                </button>
-
-                {err && (
-                  <div
-                    className="d-flex align-items-center gap-2 p-3 mt-3 rounded-3"
-                    style={{
-                      backgroundColor: "#fdecea",
-                      border: "1px solid #f5c2c7",
-                      color: "#b02a37",
-                    }}
-                  >
-                    <i className="bx bx-error-circle fs-5"></i>
-                    <span>{err}</span>
-                  </div>
-                )}
-
-                <div className="text-center mt-3">
-                  Chưa có tài khoản?{" "}
-                  <Link to="/auth/register" className="text-primary">
-                    Đăng ký ngay
-                  </Link>
-                </div>
-              </form>
-            </div>
+        {/* Password */}
+        <div className="space-y-1.5">
+          <label className="block text-slate-600 dark:text-slate-300 font-medium">
+            Mật khẩu
+          </label>
+          <div className="relative">
+            <input
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 px-4 py-3 pr-10 outline-none focus:ring-2 focus:ring-slate-300"
+              placeholder="Nhập mật khẩu"
+              type={showPw ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="absolute right-2 top-1/2 -translate-y-1/2 icon-btn"
+              onClick={() => setShowPw((v) => !v)}
+              aria-label="toggle password"
+            >
+              {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
         </div>
-      </div>
-    </section>
+
+        {/* Remember + Forgot */}
+        <div className="flex items-center justify-between">
+          <label className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="accent-slate-700"
+            />
+            Ghi nhớ đăng nhập
+          </label>
+
+          <Link
+            to="/auth/forgot-password"
+            className="text-sm text-slate-600 hover:underline"
+          >
+            Quên mật khẩu?
+          </Link>
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-xl bg-slate-900 text-white py-3 font-semibold hover:opacity-90 active:opacity-80 disabled:opacity-60 flex items-center justify-center gap-2"
+        >
+          {loading && <Loader2 className="animate-spin" size={18} />}
+          Đăng nhập
+        </button>
+      </form>
+
+      <p className="text-center text-sm text-slate-500">
+        Chưa có tài khoản?{" "}
+        <Link className="underline" to="/auth/register">
+          Đăng ký
+        </Link>
+      </p>
+    </motion.div>
   );
 }
