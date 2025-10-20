@@ -14,7 +14,11 @@ export default function ProtectedRoute({ roles }) {
 
   // Yêu cầu role cụ thể
   if (roles?.length) {
-    const ok = user?.roles?.some((r) => roles.includes(r));
+    const myRoles = (user?.roles || []).map((r) =>
+      r.startsWith("ROLE_") ? r : `ROLE_${r}`
+    );
+    const needed = roles.map((r) => (r.startsWith("ROLE_") ? r : `ROLE_${r}`));
+    const ok = myRoles.some((r) => needed.includes(r));
     if (!ok) {
       return (
         <div className="container text-center mt-5">
