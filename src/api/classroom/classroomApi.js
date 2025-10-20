@@ -16,7 +16,10 @@ export const classroomApi = {
   update(id, payload) {
     return http.put(`${BASE}/${id}`, payload).then((r) => r.data);
   },
-  remove(id) {
-    return http.delete(`${BASE}/${id}`).then((r) => r.data);
+  enable(id) {
+    return http.patch?.(`${BASE}/${id}/enable`).then((r) => r.data);
+  },
+  disable(id) {
+    return http.patch?.(`${BASE}/${id}/disable`).then((r) => r.data);
   },
 };
