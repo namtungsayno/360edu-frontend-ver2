@@ -2,6 +2,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import ProtectedRoute from "router/ProtectedRoute";
+import SubjectRoutes from "./subject/SubjectRoutes";
+
 import { ClassroomProvider } from "context/classroom/ClassroomContext";
 
 import MainLayout from "layout/MainLayout";
@@ -22,6 +24,9 @@ const SchedulePage = lazy(() => import("pages/schedule/SchedulePage")); // ✅ L
 const UserListPage = lazy(() => import("pages/user/UserListPage"));
 const CourseListPage = lazy(() => import("pages/course/CourseListPage"));
 const ClassListPage = lazy(() => import("pages/class/ClassListPage"));
+
+
+// 👇 thêm dòng này nếu bạn dùng file routes/classroom/ClassroomRoutes.jsx như mình đã soạn
 const ClassroomRoutes = lazy(() => import("./classroom/ClassroomRoutes"));
 const TeacherProfilePublic = lazy(() =>
   import("pages/teachers/TeacherProfilePublic")
@@ -84,6 +89,10 @@ export default function AppRouter() {
             <Route path="register" element={<RegisterPage />} />
           </Route>
 
+          {/* Main App with Layout */}
+          <Route element={<ProtectedRoute />}>
+      
+          </Route>
           {/* ========== APP AREA ========== */}
           <Route element={<ProtectedRoute />}>
             <Route element={<MainLayout />}>
@@ -177,6 +186,14 @@ export default function AppRouter() {
             </Route>
           </Route>
 
+          <Route
+            element={<ProtectedRoute roles={["ROLE_ADMIN"]} />} 
+          >
+            <Route path="/home/subject/*" element={<HomePage />}>
+              <Route path="*" element={<SubjectRoutes />} />
+            </Route>
+          </Route>
+          
           {/* fallback */}
           <Route path="*" element={<Navigate to="/auth/login" replace />} />
         </Routes>
