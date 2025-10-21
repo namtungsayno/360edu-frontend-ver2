@@ -10,7 +10,7 @@ export default function UserDetailPage() {
   const [f, setF] = useState({ fullName: "", email: "", phone: "" });
   const [ok, setOk] = useState("");
 
-  const load = async () => {
+  async function load() {
     const d = await userService.get(id);
     setInfo(d);
     setF({
@@ -18,9 +18,10 @@ export default function UserDetailPage() {
       email: d.email || "",
       phone: d.phone || "",
     });
-  };
+  }
+
   useEffect(() => {
-    load(); /* eslint-disable-next-line */
+    load(); // eslint-disable-next-line
   }, [id]);
 
   const submit = async (e) => {
@@ -36,22 +37,26 @@ export default function UserDetailPage() {
   const isTeacher = (info.roles || []).includes("ROLE_TEACHER");
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <Card>
-        <CardHeader
-          title={`User #${info.id}`}
-          actions={
-            isTeacher ? (
-              <Link to={`/teachers/${info.id}/profile`}>
-                <Button variant="outline">Xem hồ sơ GV</Button>
-              </Link>
-            ) : null
-          }
-        />
-        <CardBody>
-          <p className="text-sm text-zinc-500 mb-4">
-            {info.roles?.join(", ")} — {info.enabled ? "Active" : "Disabled"}
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Chi tiết người dùng</h1>
+          <p className="text-sm text-zinc-500">
+            #{info.id} • {info.username} • {(info.roles || []).join(", ")} •{" "}
+            {info.enabled ? "Active" : "Disabled"}
           </p>
+        </div>
+
+        {isTeacher && (
+          <Link to={`/teachers/${info.id}/profile`}>
+            <Button variant="outline">Xem hồ sơ GV</Button>
+          </Link>
+        )}
+      </div>
+
+      <Card>
+        <CardHeader title="Thông tin cơ bản" />
+        <CardBody>
           <form
             onSubmit={submit}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -80,11 +85,47 @@ export default function UserDetailPage() {
                 onChange={(e) => setF({ ...f, phone: e.target.value })}
               />
             </div>
-            <div className="col-span-full">
-              <Button>Lưu</Button>{" "}
-              {ok && <span className="ml-3 text-emerald-600">{ok}</span>}
+
+            <div className="col-span-full flex items-center gap-3">
+              <Button type="submit">Lưu</Button>
+              {ok && <span className="text-emerald-600 text-sm">{ok}</span>}
+              <span
+                className={`ml-auto inline-flex px-2.5 py-1 rounded-full text-xs ${
+                  info.enabled
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
+                }`}
+              >
+                {info.enabled ? "Active" : "Disabled"}
+              </span>
             </div>
           </form>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader title="Thông tin hệ thống" />
+        <CardBody>
+          <div className="grid sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <div className="text-zinc-500 mb-1">Username</div>
+              <div className="font-medium">{info.username}</div>
+            </div>
+            <div>
+              <div className="text-zinc-500 mb-1">Roles</div>
+              <div className="font-medium">{(info.roles || []).join(", ")}</div>
+            </div>
+            <div>
+              <div className="text-zinc-500 mb-1">ID</div>
+              <div className="font-medium">{info.id}</div>
+            </div>
+            <div>
+              <div className="text-zinc-500 mb-1">Trạng thái</div>
+              <div className="font-medium">
+                {info.enabled ? "Active" : "Disabled"}
+              </div>
+            </div>
+          </div>
         </CardBody>
       </Card>
     </div>
