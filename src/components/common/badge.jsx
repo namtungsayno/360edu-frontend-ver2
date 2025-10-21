@@ -1,0 +1,2 @@
+import React from "react"; import { cn } from "../common/utils";
+export function Badge({ className, children, ...props }) { return <span className={cn("bg-gray-200 text-sm px-2 py-1 rounded", className)} {...props}>{children}</span> }

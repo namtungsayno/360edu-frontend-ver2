@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import ProtectedRoute from "router/ProtectedRoute";
+import SubjectRoutes from "./subject/SubjectRoutes";
 
 import { ClassroomProvider } from "context/classroom/ClassroomContext";
 
@@ -11,6 +12,7 @@ const HomePage = lazy(() => import("pages/home/HomePage"));
 const UserListPage = lazy(() => import("pages/user/UserListPage"));
 const CourseListPage = lazy(() => import("pages/course/CourseListPage"));
 const ClassListPage = lazy(() => import("pages/class/ClassListPage"));
+
 
 // 👇 thêm dòng này nếu bạn dùng file routes/classroom/ClassroomRoutes.jsx như mình đã soạn
 const ClassroomRoutes = lazy(() => import("./classroom/ClassroomRoutes"));
@@ -26,9 +28,9 @@ export default function AppRouter() {
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/auth/register" element={<RegisterPage />} />
 
-          {/* Ai cũng vào được sau khi login */}
+          {/* Main App with Layout */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/home" element={<HomePage />} />
+      
           </Route>
 
           {/* Chỉ ADMIN */}
@@ -57,6 +59,15 @@ export default function AppRouter() {
               }
             />
           </Route>
+
+          <Route
+            element={<ProtectedRoute roles={["ROLE_ADMIN"]} />} 
+          >
+            <Route path="/home/subject/*" element={<HomePage />}>
+              <Route path="*" element={<SubjectRoutes />} />
+            </Route>
+          </Route>
+          
         </Routes>
       </Suspense>
     </BrowserRouter>
