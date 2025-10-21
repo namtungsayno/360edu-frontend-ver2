@@ -16,7 +16,11 @@ export default function useClassroomForm(id) {
       setError("");
       try {
         const data = await classroomService.getById(id);
-        setF({ name: data.name ?? "", capacity: String(data.capacity ?? "") });
+        setF({
+          name: data.name ?? "",
+          capacity: String(data.capacity ?? ""),
+          active: data.active ?? data.status === "ACTIVE",
+        });
       } catch (e) {
         setError(
           e?.response?.data?.message || e?.message || "Tải dữ liệu thất bại"
