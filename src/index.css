@@ -1,0 +1,10 @@
+/* E:\Semester9\360edu-frontend-ver2\src\index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "./style/global.css";
+
+/* Có thể thêm custom CSS nếu muốn */
+body {
+  @apply bg-gray-50 text-gray-900;
+}
