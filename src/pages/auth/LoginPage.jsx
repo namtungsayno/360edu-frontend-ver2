@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "context/auth/AuthContext";
+import getLandingPath from "utils/getLandingPath";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -39,8 +40,11 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      await login({ username, password, remember });
-      navigate("/home", { replace: true });
+      const u = await login({ username, password }); // login trả về user (nếu chưa, bạn có thể lấy từ context sau)
+      const to = getLandingPath(
+        u ?? JSON.parse(localStorage.getItem("auth_profile"))
+      );
+      navigate(to, { replace: true });
     } catch (ex) {
       setErr(ex?.displayMessage || "Đăng nhập thất bại");
     } finally {
