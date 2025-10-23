@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "context/auth/AuthContext";
 import { userService } from "services/user/userService";
-import { Card, CardHeader, CardBody } from "components/ui/Card";
-import Button from "components/ui/Button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Input,
+  Textarea,
+  Label,
+} from "components/common";
 
 export default function TeacherProfileEdit() {
   const { user } = useAuth();
@@ -28,32 +36,32 @@ export default function TeacherProfileEdit() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <Card>
-        <CardHeader title="Sửa hồ sơ giáo viên" />
-        <CardBody>
+        <CardHeader>
+          <CardTitle>Sửa hồ sơ giáo viên</CardTitle>
+        </CardHeader>
+
+        <CardContent>
           {ok && <div className="text-emerald-600 mb-3">{ok}</div>}
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <label className="block text-sm mb-1">Bio</label>
-              <textarea
+              <Label className="block mb-1">Bio</Label>
+              <Textarea
                 rows={3}
-                className="w-full border rounded-xl px-3 py-2 bg-transparent border-zinc-300 dark:border-zinc-700"
                 value={f.bio || ""}
                 onChange={(e) => setF({ ...f, bio: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm mb-1">Môn (CSV)</label>
-              <input
-                className="w-full border rounded-xl px-3 py-2 bg-transparent border-zinc-300 dark:border-zinc-700"
+              <Label className="block mb-1">Môn (CSV)</Label>
+              <Input
                 value={f.subjects || ""}
                 onChange={(e) => setF({ ...f, subjects: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm mb-1">Số năm</label>
-              <input
+              <Label className="block mb-1">Số năm</Label>
+              <Input
                 type="number"
-                className="w-full border rounded-xl px-3 py-2 bg-transparent border-zinc-300 dark:border-zinc-700"
                 value={f.yearsExperience || 0}
                 onChange={(e) =>
                   setF({ ...f, yearsExperience: +e.target.value })
@@ -61,16 +69,15 @@ export default function TeacherProfileEdit() {
               />
             </div>
             <div>
-              <label className="block text-sm mb-1">Avatar URL</label>
-              <input
-                className="w-full border rounded-xl px-3 py-2 bg-transparent border-zinc-300 dark:border-zinc-700"
+              <Label className="block mb-1">Avatar URL</Label>
+              <Input
                 value={f.avatarUrl || ""}
                 onChange={(e) => setF({ ...f, avatarUrl: e.target.value })}
               />
             </div>
-            <Button>Lưu</Button>
+            <Button type="submit">Lưu</Button>
           </form>
-        </CardBody>
+        </CardContent>
       </Card>
     </div>
   );

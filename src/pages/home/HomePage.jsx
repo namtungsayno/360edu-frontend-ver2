@@ -1,14 +1,16 @@
-// src/pages/home/HomePage.jsx
 import React from "react";
 import { Outlet } from "react-router-dom";
-import MainLayout from "components/layout/MainLayout";
+import { Sidebar } from "components/common";
 
 export default function HomePage() {
   return (
-    <MainLayout>
-      <div className="bg-white text-black min-h-full">
+    <div className="min-h-screen grid md:grid-cols-[240px_1fr]">
+      <aside className="border-r">
+        <Sidebar />
+      </aside>
+      <main className="p-6 bg-background text-foreground">
         <Outlet />
-      </div>
-    </MainLayout>
+      </main>
+    </div>
   );
 }

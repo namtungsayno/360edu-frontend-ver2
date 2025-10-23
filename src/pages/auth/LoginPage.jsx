@@ -23,6 +23,7 @@ export default function LoginPage() {
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // useState và useEffect?
   useEffect(() => {
     if (justRegistered) {
       setInfo("Đăng ký thành công! Vui lòng đăng nhập.");
@@ -51,7 +52,7 @@ export default function LoginPage() {
       setLoading(false);
     }
   }
-
+  // Là jsx.
   return (
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.98 }}

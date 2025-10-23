@@ -1,8 +1,15 @@
 import React, { useState } from "react";
 import { useAuth } from "context/auth/AuthContext";
 import { userService } from "services/user/userService";
-import { Card, CardHeader, CardBody } from "components/ui/Card";
-import Button from "components/ui/Button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Input,
+  Label,
+} from "components/common";
 
 export default function ChangePasswordPage() {
   const { user } = useAuth();
@@ -29,39 +36,50 @@ export default function ChangePasswordPage() {
       });
       setOk("Đổi mật khẩu thành công");
       setF({ currentPassword: "", newPassword: "", confirm: "" });
-    } catch (e) {
-      setErr(e.message);
+    } catch (ex) {
+      setErr(ex.message || "Có lỗi xảy ra");
     }
   };
 
   return (
     <div className="p-6 max-w-xl mx-auto">
       <Card>
-        <CardHeader title="Đổi mật khẩu" />
-        <CardBody>
+        <CardHeader>
+          <CardTitle>Đổi mật khẩu</CardTitle>
+        </CardHeader>
+        <CardContent>
           {err && <div className="text-rose-600 mb-3">{err}</div>}
           {ok && <div className="text-emerald-600 mb-3">{ok}</div>}
           <form onSubmit={submit} className="space-y-4">
-            {["currentPassword", "newPassword", "confirm"].map((k) => (
-              <div key={k}>
-                <label className="block text-sm mb-1">
-                  {k === "currentPassword"
-                    ? "Mật khẩu hiện tại"
-                    : k === "newPassword"
-                    ? "Mật khẩu mới"
-                    : "Xác nhận mật khẩu mới"}
-                </label>
-                <input
-                  type="password"
-                  className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-transparent"
-                  value={f[k]}
-                  onChange={(e) => setF({ ...f, [k]: e.target.value })}
-                />
-              </div>
-            ))}
-            <Button>Cập nhật</Button>
+            <div>
+              <Label className="block mb-1">Mật khẩu hiện tại</Label>
+              <Input
+                type="password"
+                value={f.currentPassword}
+                onChange={(e) =>
+                  setF({ ...f, currentPassword: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Label className="block mb-1">Mật khẩu mới</Label>
+              <Input
+                type="password"
+                value={f.newPassword}
+                onChange={(e) => setF({ ...f, newPassword: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label className="block mb-1">Xác nhận mật khẩu mới</Label>
+              <Input
+                type="password"
+                value={f.confirm}
+                onChange={(e) => setF({ ...f, confirm: e.target.value })}
+              />
+            </div>
+            <Button type="submit">Cập nhật</Button>
           </form>
-        </CardBody>
+        </CardContent>
       </Card>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { userService } from "services/user/userService";
-import { Card, CardHeader, CardBody } from "components/ui/Card";
+import { Card, CardHeader, CardTitle, CardContent } from "components/common";
 
 export default function TeacherProfilePublic() {
   const { userId } = useParams();
@@ -24,8 +24,11 @@ export default function TeacherProfilePublic() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <Card>
-        <CardHeader title={`Giáo viên: ${user.fullName || user.username}`} />
-        <CardBody>
+        <CardHeader>
+          <CardTitle>Giáo viên: {user.fullName || user.username}</CardTitle>
+        </CardHeader>
+
+        <CardContent>
           {profile.avatarUrl && (
             <img
               src={profile.avatarUrl}
@@ -36,19 +39,21 @@ export default function TeacherProfilePublic() {
           )}
           <div className="space-y-3">
             <div>
-              <div className="text-sm text-zinc-500">Giới thiệu</div>
+              <div className="text-sm text-muted-foreground">Giới thiệu</div>
               <div>{profile.bio || "—"}</div>
             </div>
             <div>
-              <div className="text-sm text-zinc-500">Môn giảng dạy</div>
+              <div className="text-sm text-muted-foreground">Môn giảng dạy</div>
               <div>{profile.subjects || "—"}</div>
             </div>
             <div>
-              <div className="text-sm text-zinc-500">Kinh nghiệm (năm)</div>
+              <div className="text-sm text-muted-foreground">
+                Kinh nghiệm (năm)
+              </div>
               <div>{profile.yearsExperience ?? "—"}</div>
             </div>
           </div>
-        </CardBody>
+        </CardContent>
       </Card>
     </div>
   );

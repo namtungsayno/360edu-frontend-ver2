@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <title>360edu – Test Auth (JWT Cookie)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        margin: 24px;
+        line-height: 1.4;
+      }
+      h1 {
+        margin: 0 0 16px;
+      }
+      fieldset {
+        border: 1px solid #8884;
+        padding: 12px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+      }
+      legend {
+        padding: 0 8px;
+        font-weight: 600;
+      }
+      label {
+        display: block;
+        margin: 6px 0 4px;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+      input,
+      select,
+      button {
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #9995;
+        outline: none;
+      }
+      input,
+      select {
+        width: 100%;
+      }
+      button {
+        cursor: pointer;
+        margin-right: 8px;
+        margin-top: 8px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 12px;
+        align-items: center;
+      }
+      .stack {
+        display: grid;
+        gap: 8px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(280px, 1fr));
+        gap: 16px;
+      }
+      .muted {
+        opacity: 0.8;
+        font-size: 13px;
+      }
+      #out {
+        white-space: pre-wrap;
+        background: #00000008;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px dashed #9995;
+        min-height: 120px;
+      }
+      .ok {
+        color: #1a7f37;
+      }
+      .err {
+        color: #b42318;
+      }
+      .bar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .small {
+        font-size: 12px;
+        padding: 6px 8px;
+      }
+      code {
+        background: #00000010;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>360edu – Test API (JWT qua HttpOnly Cookie)</h1>
+
+    <fieldset class="stack">
+      <legend>Cấu hình</legend>
+      <label for="baseUrl"
+        >Base URL của API (ví dụ: <code>http://localhost:8080/api</code>)</label
+      >
+      <input id="baseUrl" value="http://localhost:8080/api" />
+      <div class="muted">
+        Mẹo: chắc chắn BE đã mở CORS cho origin của trang này (ví dụ
+        <code>http://localhost:5500</code>) và cho phép credentials.
+      </div>
+    </fieldset>
+
+    <div class="grid">
+      <fieldset class="stack">
+        <legend>Signup</legend>
+        <label for="su-username">Username</label>
+        <input id="su-username" placeholder="tuan" />
+        <label for="su-email">Email</label>
+        <input id="su-email" placeholder="tuan@example.com" />
+        <label for="su-password">Password</label>
+        <input id="su-password" type="password" placeholder="••••••••" />
+        <label for="su-roles"
+          >Roles (mỗi dòng một role: admin | mod | student)</label
+        >
+        <textarea id="su-roles" rows="3" placeholder="student"></textarea>
+        <div class="bar">
+          <button id="btnSignup">/auth/signup</button>
+        </div>
+        <div class="muted">
+          API trả message, KHÔNG auto-login. Bạn cần login tiếp theo.
+        </div>
+      </fieldset>
+
+      <fieldset class="stack">
+        <legend>Login / Logout</legend>
+        <label for="li-username">Username</label>
+        <input id="li-username" placeholder="tuan" />
+        <label for="li-password">Password</label>
+        <input id="li-password" type="password" placeholder="••••••••" />
+        <div class="bar">
+          <button id="btnLogin">/auth/login</button>
+          <button id="btnLogout" class="small">/auth/logout</button>
+        </div>
+        <div class="muted">
+          Sau khi login, BE sẽ set <code>HttpOnly</code> cookie. JS **không đọc
+          được** cookie này (điều này là đúng).
+        </div>
+      </fieldset>
+    </div>
+
+    <fieldset class="stack">
+      <legend>Gọi API</legend>
+      <div class="bar">
+        <button id="btnPublic" class="small">GET /subjects (public)</button>
+        <button id="btnProtected" class="small">GET /rooms (protected)</button>
+        <button id="btnTestAll" class="small">GET /test/all (public)</button>
+        <button id="btnTestUser" class="small">
+          GET /test/user (protected)
+        </button>
+      </div>
+      <div class="muted">
+        Các request dưới đây dùng <code>credentials: "include"</code> để gửi
+        cookie JWT kèm theo.
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Kết quả</legend>
+      <div id="out">⏳ Chưa có kết quả.</div>
+    </fieldset>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const outEl = $("out");
+
+      function log(title, data, isError = false) {
+        const t =
+          typeof data === "string" ? data : JSON.stringify(data, null, 2);
+        const stamp = new Date().toLocaleTimeString();
+        outEl.innerHTML =
+          (isError ? "❌ " : "✅ ") + title + " [" + stamp + "]\n" + t;
+        outEl.className = isError ? "err" : "ok";
+      }
+
+      function base() {
+        return $("baseUrl").value.replace(/\/+$/, ""); // bỏ dấu / cuối
+      }
+
+      async function api(path, options = {}) {
+        const url = base() + path;
+        const res = await fetch(url, {
+          method: options.method || "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {}),
+          },
+          body: options.body ? JSON.stringify(options.body) : undefined,
+          credentials: "include", // QUAN TRỌNG: gửi/nhận cookie
+        });
+
+        let data;
+        const ct = res.headers.get("content-type") || "";
+        if (ct.includes("application/json")) {
+          data = await res.json();
+        } else {
+          data = await res.text();
+        }
+        return { ok: res.ok, status: res.status, data, headers: res.headers };
+      }
+
+      // === Handlers ===
+      $("btnSignup").onclick = async () => {
+        const rolesRaw = $("su-roles").value.trim();
+        const roles = rolesRaw
+          ? rolesRaw
+              .split("\n")
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : null;
+
+        const body = {
+          username: $("su-username").value.trim(),
+          email: $("su-email").value.trim(),
+          password: $("su-password").value,
+          role: roles ? roles : null, // BE đang nhận Set<String> role (admin|mod|student)
+        };
+
+        try {
+          const r = await api("/auth/signup", { method: "POST", body });
+          if (r.ok) log("Signup OK", r.data);
+          else log(`Signup FAIL (${r.status})`, r.data, true);
+        } catch (e) {
+          log("Signup ERROR", String(e), true);
+        }
+      };
+
+      $("btnLogin").onclick = async () => {
+        const body = {
+          username: $("li-username").value.trim(),
+          password: $("li-password").value,
+        };
+        try {
+          const r = await api("/auth/login", { method: "POST", body });
+          if (r.ok) {
+            // r.data là UserInfoResponse (id, username, email, roles)
+            // Cookie JWT đã được set (HttpOnly) nếu CORS/cookie config đúng
+            log("Login OK (cookie đã được set nếu config đúng)", r.data);
+          } else {
+            log(`Login FAIL (${r.status})`, r.data, true);
+          }
+        } catch (e) {
+          log("Login ERROR", String(e), true);
+        }
+      };
+
+      $("btnLogout").onclick = async () => {
+        try {
+          const r = await api("/auth/logout", { method: "POST" });
+          if (r.ok) log("Logout OK", r.data);
+          else log(`Logout FAIL (${r.status})`, r.data, true);
+        } catch (e) {
+          log("Logout ERROR", String(e), true);
+        }
+      };
+
+      $("btnPublic").onclick = async () => {
+        try {
+          const r = await api("/subjects");
+          if (r.ok) log("GET /subjects OK", r.data);
+          else log(`GET /subjects FAIL (${r.status})`, r.data, true);
+        } catch (e) {
+          log("GET /subjects ERROR", String(e), true);
+        }
+      };
+
+      $("btnProtected").onclick = async () => {
+        try {
+          const r = await api("/rooms");
+          if (r.ok) log("GET /rooms OK (đã qua auth)", r.data);
+          else log(`GET /rooms FAIL (${r.status})`, r.data, true);
+        } catch (e) {
+          log("GET /rooms ERROR", String(e), true);
+        }
+      };
+
+      $("btnTestAll").onclick = async () => {
+        try {
+          const r = await api("/test/all");
+          if (r.ok) log("GET /test/all OK", r.data);
+          else log(`GET /test/all FAIL (${r.status})`, r.data, true);
+        } catch (e) {
+          log("GET /test/all ERROR", String(e), true);
+        }
+      };
+
+      $("btnTestUser").onclick = async () => {
+        try {
+          const r = await api("/test/user");
+          if (r.ok) log("GET /test/user OK (đã qua auth)", r.data);
+          else log(`GET /test/user FAIL (${r.status})`, r.data, true);
+        } catch (e) {
+          log("GET /test/user ERROR", String(e), true);
+        }
+      };
+    </script>
+  </body>
+</html>

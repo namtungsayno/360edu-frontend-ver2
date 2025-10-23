@@ -123,9 +123,9 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
-
+/* 
 @layer base {
-   * {
+  * {
     @apply border-border;
     outline-color: rgb(var(--ring) / 0.5);
   }
@@ -133,7 +133,7 @@
   body {
     @apply bg-background text-foreground;
   }
-}
+} */
 
 /**
  * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.

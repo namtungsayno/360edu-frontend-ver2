@@ -1,40 +1,62 @@
 ﻿// src/services/auth/authService.js
 import { http } from "api/http";
 
+/** Chuẩn hoá role:
+ * - Cho phép truyền "user" | "teacher" | "admin" hoặc mảng các string
+ * - Mặc định: ["user"]
+ */
+function normalizeRole(role) {
+  if (!role) return ["user"];
+  if (Array.isArray(role)) return role.length ? role : ["user"];
+  return [String(role)]; // string -> array
+}
+
+/** ===== Core calls ===== */
+async function doSignup({ username, email, password, role }) {
+  const payload = {
+    username: username?.trim(),
+    email: email?.trim(),
+    password,
+    role: normalizeRole(role),
+  };
+  const { data } = await http.post("/auth/signup", payload);
+  return data; // BE trả message/id...
+}
+
+async function doLogin({ username, password }) {
+  const { data } = await http.post("/auth/login", { username, password });
+  saveProfile(data); // BE trả UserInfoResponse
+  return { user: data };
+}
+
+/** ===== Local cache hồ sơ ===== */
 const PROFILE_KEY = "auth_profile";
 
-const saveProfile = (p) =>
+function saveProfile(p) {
   localStorage.setItem(PROFILE_KEY, JSON.stringify(p || null));
-const loadProfile = () => {
+}
+function loadProfile() {
   try {
     const raw = localStorage.getItem(PROFILE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
-};
+}
 
+/** ===== Public API ===== */
 export const authService = {
-  /** Đăng ký tài khoản mới: email + username + password */
-  async register({ email, username, password }) {
-    const payload = {
-      email: email?.trim(),
-      username: username?.trim(),
-      password,
-    };
-    const { data } = await http.post("/auth/register", payload);
-    // Không lưu profile ở đây vì chưa đăng nhập
-    return data; // tuỳ BE trả gì: message/id/...
-  },
+  /** Đăng ký tài khoản mới
+   *  - Cho phép gọi theo 2 tên: signup() hoặc register()
+   *  - role: "user" | "teacher" | "admin" | string[] (mặc định "user")
+   */
+  signup: doSignup,
+  register: doSignup,
 
   /** Đăng nhập: BE set cookie, body trả UserInfoResponse */
-  async login({ username, password }) {
-    const { data } = await http.post("/auth/login", { username, password });
-    saveProfile(data);
-    return { user: data };
-  },
+  login: doLogin,
 
-  /** Lấy hồ sơ: ưu tiên theo cookie; nếu 401 thì trả cache (nếu có) */
+  /** Lấy hồ sơ dựa theo cookie; nếu 401 thì trả cache (nếu có) */
   async getProfile() {
     try {
       const { data } = await http.get("/auth/me");
@@ -45,7 +67,7 @@ export const authService = {
     }
   },
 
-  /** Đăng xuất: gọi BE xóa cookie + dọn local cache */
+  /** Đăng xuất: gọi BE xoá cookie + dọn local cache */
   async logout() {
     try {
       await http.post("/auth/logout");

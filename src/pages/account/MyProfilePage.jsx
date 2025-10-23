@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "context/auth/AuthContext";
 import { userService } from "services/user/userService";
-import { Card, CardHeader, CardBody } from "components/ui/Card";
-import Button from "components/ui/Button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Input,
+  Label,
+} from "components/common";
 
 export default function MyProfilePage() {
   const { user } = useAuth();
@@ -30,42 +37,41 @@ export default function MyProfilePage() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <Card>
-        <CardHeader title="Hồ sơ của tôi" />
-        <CardBody>
+        <CardHeader>
+          <CardTitle>Hồ sơ của tôi</CardTitle>
+        </CardHeader>
+        <CardContent>
           <form
             onSubmit={submit}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
             <div>
-              <label className="block text-sm mb-1">Họ tên</label>
-              <input
-                className="w-full border rounded-xl px-3 py-2 bg-transparent border-zinc-300 dark:border-zinc-700"
+              <Label className="block mb-1">Họ tên</Label>
+              <Input
                 value={f.fullName}
                 onChange={(e) => setF({ ...f, fullName: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm mb-1">Email</label>
-              <input
-                className="w-full border rounded-xl px-3 py-2 bg-transparent border-zinc-300 dark:border-zinc-700"
+              <Label className="block mb-1">Email</Label>
+              <Input
                 value={f.email}
                 onChange={(e) => setF({ ...f, email: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm mb-1">Số điện thoại</label>
-              <input
-                className="w-full border rounded-xl px-3 py-2 bg-transparent border-zinc-300 dark:border-zinc-700"
+              <Label className="block mb-1">Số điện thoại</Label>
+              <Input
                 value={f.phone}
                 onChange={(e) => setF({ ...f, phone: e.target.value })}
               />
             </div>
             <div className="col-span-full">
-              <Button>Lưu</Button>{" "}
+              <Button type="submit">Lưu</Button>
               {ok && <span className="ml-3 text-emerald-600">{ok}</span>}
             </div>
           </form>
-        </CardBody>
+        </CardContent>
       </Card>
     </div>
   );
